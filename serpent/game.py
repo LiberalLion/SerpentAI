@@ -43,7 +43,7 @@ class Game(offshoot.Pluggable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.config = config.get(f"{self.__class__.__name__}Plugin", dict())
+        self.config = config.get(f"{self.__class__.__name__}Plugin", {})
 
         self.platform = kwargs.get("platform")
 
@@ -71,8 +71,8 @@ class Game(offshoot.Pluggable):
         self.api_class = None
         self.api_instance = None
 
-        self.environments = dict()
-        self.environment_data = dict()
+        self.environments = {}
+        self.environment_data = {}
 
         self.sprites = self._discover_sprites()
 
@@ -312,7 +312,7 @@ class Game(offshoot.Pluggable):
         if self.crossbar_process is not None:
             self.stop_crossbar()
 
-        crossbar_command = f"crossbar start --config crossbar.json"
+        crossbar_command = "crossbar start --config crossbar.json"
 
         self.crossbar_process = subprocess.Popen(shlex.split(crossbar_command))
 
@@ -338,7 +338,9 @@ class Game(offshoot.Pluggable):
 
         self.redis_client.set("SERPENT:GAME", self.__class__.__name__)
 
-        input_controller_command = f"python -m serpent.wamp_components.input_controller_component"
+        input_controller_command = (
+            "python -m serpent.wamp_components.input_controller_component"
+        )
 
         self.input_controller_process = subprocess.Popen(shlex.split(input_controller_command))
 
@@ -359,7 +361,7 @@ class Game(offshoot.Pluggable):
 
     def _discover_sprites(self):
         plugin_path = offshoot.config["file_paths"]["plugins"]
-        sprites = dict()
+        sprites = {}
 
         sprite_path = f"{plugin_path}/{self.__class__.__name__}Plugin/files/data/sprites"
 

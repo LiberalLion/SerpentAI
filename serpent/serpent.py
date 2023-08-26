@@ -47,13 +47,13 @@ def execute():
     if len(sys.argv) == 1:
         executable_help()
     elif len(sys.argv) > 1:
-        if sys.argv[1] == "-h" or sys.argv[1] == "--help":
+        if sys.argv[1] in ["-h", "--help"]:
             executable_help()
         else:
             command = sys.argv[1]
 
             if command not in valid_commands:
-                raise Exception("'%s' is not a valid Serpent command." % command)
+                raise Exception(f"'{command}' is not a valid Serpent command.")
 
             command_function_mapping[command](*sys.argv[2:])
 
@@ -370,11 +370,7 @@ def plugins():
         for directory in directories:
             plugin_names.add(directory)
 
-    manifest_plugin_names = set()
-
-    for plugin_name in offshoot.Manifest().list_plugins().keys():
-        manifest_plugin_names.add(plugin_name)
-
+    manifest_plugin_names = set(offshoot.Manifest().list_plugins().keys())
     active_plugins = plugin_names & manifest_plugin_names
     inactive_plugins = plugin_names - manifest_plugin_names
 
@@ -661,9 +657,7 @@ def initialize_game(game_name):
     if game_class is None:
         raise Exception(f"Game '{game_name}' wasn't found. Make sure the plugin is installed.")
 
-    game = game_class()
-
-    return game
+    return game_class()
 
 
 def argv_is_true(arg):

@@ -72,7 +72,7 @@ class TestGameAPI:
         self.game_api.combine_game_inputs(["1", ["2", "3"]])
 
     def test_combine_game_inputs_should_handle_valid_combinations(self):
-        assert self.game_api.combine_game_inputs([]) == dict()
+        assert self.game_api.combine_game_inputs([]) == {}
 
         assert self.game_api.combine_game_inputs(["1"]) == {
             "A": [KeyboardKey.KEY_A],

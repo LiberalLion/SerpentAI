@@ -167,11 +167,10 @@ class RainbowDQNAgent(Agent):
             self.add_human_observations_to_replay_memory()
 
     def generate_actions(self, state, **kwargs):
-        frames = list()
-
-        for game_frame in state.frames:
-            frames.append(torch.tensor(torch.from_numpy(game_frame.frame), dtype=torch.float32))
-
+        frames = [
+            torch.tensor(torch.from_numpy(game_frame.frame), dtype=torch.float32)
+            for game_frame in state.frames
+        ]
         self.current_state = torch.stack(frames, 0)
 
         if self.mode == RainbowDQNAgentModes.OBSERVE and self.observe_mode == "RANDOM":
@@ -183,13 +182,10 @@ class RainbowDQNAgent(Agent):
             self.agent.reset_noise()
             self.current_action = self.agent.act(self.current_state)
 
-        actions = list()
-
         label = self.game_inputs_mappings[0][self.current_action]
         action = self.game_inputs[0]["inputs"][label]
 
-        actions.append((label, action, None))
-
+        actions = [(label, action, None)]
         for action in actions:
             self.analytics_client.track(
                 event_key="AGENT_ACTION",
@@ -270,17 +266,14 @@ class RainbowDQNAgent(Agent):
 
     def add_human_observations_to_replay_memory(self):
         keyboard_key_value_label_mapping = self._generate_keyboard_key_value_mapping()
-        input_label_action_space_mapping = dict()
-
-        for label_action_space_value in list(enumerate(self.game_inputs[0]["inputs"])):
-            input_label_action_space_mapping[label_action_space_value[1]] = label_action_space_value[0]
-
+        input_label_action_space_mapping = {
+            label_action_space_value[1]: label_action_space_value[0]
+            for label_action_space_value in list(
+                enumerate(self.game_inputs[0]["inputs"])
+            )
+        }
         with h5py.File(f"datasets/{self.name}_input_recording.h5", "r") as f:
-            timestamps = set()
-
-            for key in f.keys():
-                timestamps.add(float(key.split("-")[0]))
-
+            timestamps = {float(key.split("-")[0]) for key in f.keys()}
             for timestamp in sorted(list(timestamps)):
                 # Frames
                 png_frames = f[f"{timestamp}-frames"].value
@@ -339,17 +332,14 @@ class RainbowDQNAgent(Agent):
         return os.path.isfile(f"datasets/{self.name}_input_recording.h5")
 
     def _generate_keyboard_key_value_mapping(self):
-        mapping = dict()
+        mapping = {}
 
         for label, input_events in self.game_inputs[0]["inputs"].items():
-            keyboard_keys = list()
-
-            for input_event in input_events:
-                if isinstance(input_event, KeyboardEvent):
-                    keyboard_keys.append(input_event.keyboard_key.value)
-                elif isinstance(input_event, MouseEvent):
-                    pass  # TODO
-
+            keyboard_keys = [
+                input_event.keyboard_key.value
+                for input_event in input_events
+                if isinstance(input_event, KeyboardEvent)
+            ]
             mapping[tuple(sorted(keyboard_keys))] = label
 
         return mapping
